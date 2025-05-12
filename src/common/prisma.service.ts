@@ -13,11 +13,7 @@ export class PrismaService
       log: [
         {
           emit: 'event',
-          level: 'error',
-        },
-        {
-          emit: 'event',
-          level: 'warn',
+          level: 'query',
         },
         {
           emit: 'event',
@@ -25,20 +21,19 @@ export class PrismaService
         },
         {
           emit: 'event',
-          level: 'query',
+          level: 'warn',
+        },
+        {
+          emit: 'event',
+          level: 'error',
         },
       ],
     });
   }
 
   onModuleInit() {
-    // Error
-    this.$on('error', (e) => {
-      this.logger.error(e);
-    });
-
-    // Warning
-    this.$on('warn', (e) => {
+    // Query
+    this.$on('query', (e) => {
       this.logger.error(e);
     });
 
@@ -47,8 +42,13 @@ export class PrismaService
       this.logger.error(e);
     });
 
-    // Query
-    this.$on('query', (e) => {
+    // Warning
+    this.$on('warn', (e) => {
+      this.logger.error(e);
+    });
+
+    // Error
+    this.$on('error', (e) => {
       this.logger.error(e);
     });
   }
