@@ -19,8 +19,8 @@ describe('UserController', () => {
       imports: [AppModule, TestModule],
     }).compile();
 
-    testService = app.get(TestService);
     app = moduleFixture.createNestApplication();
+    testService = app.get(TestService);
     logger = app.get(WINSTON_MODULE_PROVIDER);
     await app.init();
   });
@@ -44,6 +44,21 @@ describe('UserController', () => {
       expect(response.status).toBe(200);
       expect(response.body.data.username).toBe('test');
       expect(response.body.data.name).toBe('test');
+    });
+
+    it('should be rejected if request is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/users')
+        .send({
+          username: '',
+          password: '',
+          name: '',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
     });
   });
 });
