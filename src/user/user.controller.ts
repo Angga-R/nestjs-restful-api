@@ -6,6 +6,8 @@ import {
   UserResponse,
 } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
+import { Auth } from 'src/common/auth.decorator';
+import { User } from 'generated/prisma';
 
 @Controller('/api/users')
 export class UserController {
@@ -29,6 +31,16 @@ export class UserController {
     @Body() request: LoginUserRequest,
   ): Promise<WebResponse<UserResponse>> {
     const result: UserResponse = await this.userService.login(request);
+
+    return {
+      data: result,
+    };
+  }
+
+  @Post('/current')
+  @HttpCode(200)
+  get(@Auth() user: User): WebResponse<UserResponse> {
+    const result: UserResponse = this.userService.get(user);
 
     return {
       data: result,

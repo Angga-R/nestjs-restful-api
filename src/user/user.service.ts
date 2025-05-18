@@ -12,6 +12,7 @@ import {
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
+import { User } from 'generated/prisma';
 
 @Injectable()
 export class UserService {
@@ -87,6 +88,13 @@ export class UserService {
       username: user.username,
       name: user.name,
       token: user.token,
+    };
+  }
+
+  get(user: User): UserResponse {
+    return {
+      username: user.username,
+      name: user.name,
     };
   }
 }
