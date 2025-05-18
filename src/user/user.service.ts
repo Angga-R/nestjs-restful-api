@@ -7,6 +7,7 @@ import { PrismaService } from 'src/common/prisma.service';
 import {
   LoginUserRequest,
   RegisterUserRequest,
+  UpdateUserRequest,
   UserResponse,
 } from 'src/model/user.model';
 import { UserValidation } from './user.validation';
@@ -23,7 +24,7 @@ export class UserService {
   ) {}
 
   async register(request: RegisterUserRequest): Promise<UserResponse> {
-    this.logger.info(`Register new user : ${JSON.stringify(request)}`);
+    this.logger.debug(`Register new user : ${JSON.stringify(request)}`);
     const registerRequest: RegisterUserRequest =
       this.validationService.validate(UserValidation.REGISTER, request);
 
@@ -50,7 +51,7 @@ export class UserService {
   }
 
   async login(request: LoginUserRequest): Promise<UserResponse> {
-    this.logger.info(`Login user : ${JSON.stringify(request)}`);
+    this.logger.debug(`Login user : ${JSON.stringify(request)}`);
     const validatedData: LoginUserRequest = this.validationService.validate(
       UserValidation.LOGIN,
       request,
@@ -95,6 +96,35 @@ export class UserService {
     return {
       username: user.username,
       name: user.name,
+    };
+  }
+
+  async update(user: User, request: UpdateUserRequest): Promise<UserResponse> {
+    this.logger.debug(`Update user : ${JSON.stringify(request)}`);
+
+    const validatedData: UpdateUserRequest = this.validationService.validate(
+      UserValidation.UPDATE,
+      request,
+    );
+
+    if (validatedData.name) {
+      user.name = validatedData.name;
+    }
+
+    if (validatedData.password) {
+      user.password = await bcrypt.hash(validatedData.password, 10);
+    }
+
+    const result = await this.prismaService.user.update({
+      where: {
+        username: user.username,
+      },
+      data: user,
+    });
+
+    return {
+      username: result.username,
+      name: result.name,
     };
   }
 }

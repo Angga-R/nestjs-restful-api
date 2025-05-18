@@ -9,10 +9,20 @@ class LoginUserRequest {
   password: string;
 }
 
+class UpdateUserRequest {
+  name?: string;
+  password?: string;
+}
+
 class UserResponse {
   username: string;
   name: string;
   token?: string | null;
 }
 
-export { RegisterUserRequest, LoginUserRequest, UserResponse };
+export {
+  RegisterUserRequest,
+  LoginUserRequest,
+  UpdateUserRequest,
+  UserResponse,
+};
