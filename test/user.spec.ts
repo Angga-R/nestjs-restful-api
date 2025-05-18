@@ -9,7 +9,7 @@ import { AppModule } from './../src/app.module';
 import { TestModule } from './test.module';
 import { TestService } from './test.service';
 
-describe('AppController (e2e)', () => {
+describe('UserController', () => {
   let app: INestApplication<App>;
   let logger: Logger;
   let testService: TestService;

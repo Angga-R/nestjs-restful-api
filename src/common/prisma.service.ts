@@ -8,13 +8,11 @@ export class PrismaService
   extends PrismaClient<Prisma.PrismaClientOptions, string>
   implements OnModuleInit
 {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private logger: Logger) {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {
     super({
       log: [
-        {
-          emit: 'event',
-          level: 'query',
-        },
         {
           emit: 'event',
           level: 'info',
@@ -27,6 +25,10 @@ export class PrismaService
           emit: 'event',
           level: 'error',
         },
+        {
+          emit: 'event',
+          level: 'query',
+        },
       ],
     });
   }
@@ -34,17 +36,17 @@ export class PrismaService
   onModuleInit() {
     // Query
     this.$on('query', (e) => {
-      this.logger.error(e);
+      this.logger.info(e);
     });
 
     // Info
     this.$on('info', (e) => {
-      this.logger.error(e);
+      this.logger.info(e);
     });
 
     // Warning
     this.$on('warn', (e) => {
-      this.logger.error(e);
+      this.logger.warn(e);
     });
 
     // Error
