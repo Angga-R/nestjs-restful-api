@@ -25,40 +25,35 @@ describe('UserController', () => {
     await app.init();
   });
 
-  describe('POST /api/users', () => {
+  describe('POST /api/contact/create', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
     afterEach(async () => {
+      await testService.deleteContact();
       await testService.deleteUser();
     });
 
-    it('should be able to register', async () => {
+    it('should be able to create new contact', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/users')
+        .post('/api/contact/create')
+        .set('Authorization', 'test')
         .send({
-          username: 'test',
-          password: 'rahasia',
-          name: 'test',
+          first_name: 'test',
+          last_name: 'test',
+          email: 'test@gmail.com',
+          phone: '099898565',
         });
 
       logger.info(response.body);
 
       expect(response.status).toBe(200);
-      expect(response.body.data.username).toBe('test');
-      expect(response.body.data.name).toBe('test');
-    });
-
-    it('should be rejected if request is invalid', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/users')
-        .send({
-          username: '',
-          password: '',
-          name: '',
-        });
-
-      logger.info(response.body);
-
-      expect(response.status).toBe(400);
-      expect(response.body.errors).toBeDefined();
+      expect(response.body.data.first_name).toBe('test');
+      expect(response.body.data.last_name).toBe('test');
+      expect(response.body.data.email).toBe('test@gmail.com');
+      expect(response.body.data.phone).toBe('099898565');
     });
   });
 });
