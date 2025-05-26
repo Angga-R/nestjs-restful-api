@@ -32,8 +32,7 @@ describe('UserController', () => {
     });
 
     afterEach(async () => {
-      await testService.deleteContact();
-      await testService.deleteUser();
+      await testService.deleteAll();
     });
 
     it('should be able to create new contact', async () => {
@@ -54,6 +53,57 @@ describe('UserController', () => {
       expect(response.body.data.last_name).toBe('test');
       expect(response.body.data.email).toBe('test@gmail.com');
       expect(response.body.data.phone).toBe('099898565');
+    });
+
+    it('should be rejected if request is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/contact/create')
+        .set('Authorization', 'test')
+        .send({
+          first_name: '',
+          last_name: '',
+          email: '',
+          phone: '',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('GET /api/contact/:id', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAll();
+    });
+
+    it('should can get contact by Id', async () => {
+      const contactId = await testService.createContact();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/${contactId}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+    });
+
+    it('should throw an error when id not found', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/457`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
     });
   });
 });

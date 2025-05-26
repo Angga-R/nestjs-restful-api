@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { Logger } from 'winston';
@@ -43,5 +43,26 @@ export class ContactService {
       email: contact.email,
       phone: contact.phone,
     };
+  }
+
+  async getById(user: User, id: number): Promise<ContactResponse> {
+    const contact = await this.prismaService.contact.findUnique({
+      where: {
+        id: id,
+        username: user.username,
+      },
+    });
+
+    if (contact) {
+      return {
+        id: contact.id,
+        first_name: contact.first_name,
+        last_name: contact.last_name,
+        email: contact.email,
+        phone: contact.phone,
+      };
+    } else {
+      throw new HttpException('contact not found', 404);
+    }
   }
 }

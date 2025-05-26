@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from 'generated/prisma';
@@ -19,6 +27,19 @@ export class ContactController {
       user,
       request,
     );
+
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/:id')
+  @HttpCode(200)
+  async getById(
+    @Auth() user: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<WebResponse<ContactResponse>> {
+    const result: ContactResponse = await this.contactService.getById(user, id);
 
     return {
       data: result,

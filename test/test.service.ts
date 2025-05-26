@@ -36,11 +36,42 @@ export class TestService {
     });
   }
 
+  async createContact(): Promise<number> {
+    const contact = await this.prismaService.contact.create({
+      data: {
+        username: 'test',
+        first_name: 'test',
+        last_name: 'test',
+        email: 'test@email.com',
+        phone: '054053803583',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return contact.id;
+  }
+
   async deleteContact(): Promise<void> {
     await this.prismaService.contact.deleteMany({
       where: {
         username: 'test',
       },
     });
+  }
+
+  async deleteAddress(): Promise<void> {
+    await this.prismaService.address.deleteMany({
+      where: {
+        city: 'test',
+      },
+    });
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.deleteAddress();
+    await this.deleteContact();
+    await this.deleteUser();
   }
 }
