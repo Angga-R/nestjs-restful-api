@@ -5,7 +5,11 @@ import { PrismaService } from 'src/common/prisma.service';
 import { Logger } from 'winston';
 import { ContactValidation } from './contact.validation';
 import { User } from 'generated/prisma';
-import { ContactResponse, CreateContactRequest } from 'src/model/contact.model';
+import {
+  ContactResponse,
+  CreateContactRequest,
+  UpdateContactRequest,
+} from 'src/model/contact.model';
 import { ValidationService } from 'src/common/validation.service';
 
 Injectable();
@@ -46,6 +50,10 @@ export class ContactService {
   }
 
   async getById(user: User, id: number): Promise<ContactResponse> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} ContactService.getById(${id})`,
+    );
+
     const contact = await this.prismaService.contact.findUnique({
       where: {
         id: id,
@@ -64,5 +72,44 @@ export class ContactService {
     } else {
       throw new HttpException('contact not found', 404);
     }
+  }
+
+  async update(
+    user: User,
+    request: UpdateContactRequest,
+  ): Promise<ContactResponse> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} ContactService.create(${JSON.stringify(request)})`,
+    );
+
+    const validatedData: UpdateContactRequest = this.validationService.validate(
+      ContactValidation.UPDATE,
+      request,
+    );
+
+    const isExist = await this.prismaService.contact.findUnique({
+      where: {
+        id: validatedData.id,
+        username: user.username,
+      },
+    });
+
+    if (!isExist) throw new HttpException('contact not found', 404);
+
+    const contact = await this.prismaService.contact.update({
+      where: {
+        id: validatedData.id,
+        username: user.username,
+      },
+      data: validatedData,
+    });
+
+    return {
+      id: contact.id,
+      first_name: contact.first_name,
+      last_name: contact.last_name,
+      email: contact.email,
+      phone: contact.phone,
+    };
   }
 }

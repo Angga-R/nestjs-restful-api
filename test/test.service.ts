@@ -43,7 +43,7 @@ export class TestService {
         first_name: 'test',
         last_name: 'test',
         email: 'test@email.com',
-        phone: '054053803583',
+        phone: '12345678',
       },
       select: {
         id: true,
