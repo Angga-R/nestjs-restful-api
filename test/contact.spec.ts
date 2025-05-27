@@ -160,4 +160,39 @@ describe('ContactController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('DELETE /api/contact/:id/remove', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAll();
+    });
+
+    it('should be remove contact', async () => {
+      const contactId = await testService.createContact();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contact/${contactId}/remove`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBeDefined();
+    });
+
+    it('should be rejected when id not found', async () => {
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contact/467/remove`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

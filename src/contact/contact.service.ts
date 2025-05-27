@@ -112,4 +112,22 @@ export class ContactService {
       phone: contact.phone,
     };
   }
+
+  async remove(user: User, id: number): Promise<void> {
+    const isExist = await this.prismaService.contact.findUnique({
+      where: {
+        id: id,
+        username: user.username,
+      },
+    });
+
+    if (!isExist) throw new HttpException('contact not found', 404);
+
+    await this.prismaService.contact.delete({
+      where: {
+        id: id,
+        username: user.username,
+      },
+    });
+  }
 }
