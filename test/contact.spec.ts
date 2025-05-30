@@ -195,4 +195,59 @@ describe('ContactController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('GET /api/contact', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAll();
+    });
+
+    it('should can get contact without query', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBe(1);
+    });
+
+    it('should can get contact with query', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact`)
+        .query({
+          search: 'es',
+          size: '1',
+          page: '1',
+        })
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBe(1);
+    });
+
+    it('should return empty data when search data not found', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact`)
+        .query({
+          search: 'wrong',
+          size: '1',
+          page: '1',
+        })
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.length).toBe(0);
+    });
+  });
 });

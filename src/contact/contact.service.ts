@@ -11,6 +11,7 @@ import {
   UpdateContactRequest,
 } from 'src/model/contact.model';
 import { ValidationService } from 'src/common/validation.service';
+import { WebResponse } from 'src/model/web.model';
 
 Injectable();
 export class ContactService {
@@ -79,7 +80,7 @@ export class ContactService {
     request: UpdateContactRequest,
   ): Promise<ContactResponse> {
     this.logger.debug(
-      `user: ${JSON.stringify(user)} ContactService.create(${JSON.stringify(request)})`,
+      `user: ${JSON.stringify(user)} ContactService.update(${JSON.stringify(request)})`,
     );
 
     const validatedData: UpdateContactRequest = this.validationService.validate(
@@ -114,6 +115,10 @@ export class ContactService {
   }
 
   async remove(user: User, id: number): Promise<void> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} ContactService.remove(${JSON.stringify(id)})`,
+    );
+
     const isExist = await this.prismaService.contact.findUnique({
       where: {
         id: id,
@@ -129,5 +134,84 @@ export class ContactService {
         username: user.username,
       },
     });
+  }
+
+  async getAll(
+    user: User,
+    parameter: string,
+    size: number,
+    page: number,
+  ): Promise<WebResponse<ContactResponse[]>> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} ContactService.update(parameter: ${parameter}, size: ${size}, page: ${page})`,
+    );
+    let query: object;
+
+    if (parameter) {
+      query = {
+        username: user.username,
+        OR: [
+          {
+            first_name: {
+              contains: parameter,
+            },
+          },
+          {
+            last_name: {
+              contains: parameter,
+            },
+          },
+          {
+            email: {
+              contains: parameter,
+            },
+          },
+          {
+            phone: {
+              contains: parameter,
+            },
+          },
+        ],
+      };
+    } else {
+      query = {
+        username: user.username,
+      };
+    }
+
+    const skip: number = (page - 1) * size;
+
+    const result = await this.prismaService.contact.findMany({
+      where: query,
+      take: size,
+      skip: skip,
+    });
+
+    const data: ContactResponse[] = [];
+
+    for (let i = 0; i < result.length; i++) {
+      const contact: ContactResponse = {
+        id: result[i].id,
+        first_name: result[i].first_name,
+        last_name: result[i].last_name,
+        email: result[i].email,
+        phone: result[i].phone,
+      };
+
+      data.push(contact);
+    }
+
+    const totalItem: number = await this.prismaService.contact.count({
+      where: query,
+    });
+
+    return {
+      data: data,
+      paging: {
+        current_page: page,
+        total_page: Math.ceil(totalItem / size),
+        total_item: totalItem,
+      },
+    };
   }
 }

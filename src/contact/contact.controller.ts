@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { Auth } from 'src/common/auth.decorator';
@@ -74,5 +75,16 @@ export class ContactController {
     await this.contactService.remove(user, id);
 
     return 'OK';
+  }
+
+  @Get()
+  @HttpCode(200)
+  async getAll(
+    @Auth() user: User,
+    @Query('search') searchData: string,
+    @Query('size', new ParseIntPipe({ optional: true })) size: number,
+    @Query('page', new ParseIntPipe({ optional: true })) page: number,
+  ): Promise<WebResponse<ContactResponse[]>> {
+    return this.contactService.getAll(user, searchData, size || 10, page || 1);
   }
 }
