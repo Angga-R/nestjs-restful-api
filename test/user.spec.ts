@@ -61,4 +61,80 @@ describe('UserController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('POST /api/users/login', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+    });
+
+    afterEach(async () => {
+      await testService.deleteUser();
+    });
+
+    it('should be able to login', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'rahasia',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test');
+      expect(response.body.data.token).toBeDefined();
+    });
+
+    it('should be rejected if username is wrong', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'salah',
+          password: 'rahasia',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if password is wrong', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'salah',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
+
+  describe('DELETE /api/users/current', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
+    afterEach(async () => {
+      await testService.deleteUser();
+    });
+
+    it('should be able to logout', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBeTruthy();
+    });
+  });
 });
