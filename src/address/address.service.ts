@@ -16,6 +16,22 @@ export class AddressService {
     private validationService: ValidationService,
   ) {}
 
+  private async isContactExist(
+    username: string,
+    contactId: number,
+  ): Promise<void> {
+    const isContactIdExist = await this.prismaService.contact.findUnique({
+      where: {
+        username: username,
+        id: contactId,
+      },
+    });
+
+    if (!isContactIdExist) {
+      throw new HttpException('Contact not found', 404);
+    }
+  }
+
   async create(
     user: User,
     contactId: number,
@@ -25,16 +41,7 @@ export class AddressService {
       `user: ${JSON.stringify(user)} AddressService.create(contactId: ${contactId}, request: ${JSON.stringify(request)}`,
     );
 
-    const isContactIdExist = await this.prismaService.contact.findUnique({
-      where: {
-        username: user.username,
-        id: contactId,
-      },
-    });
-
-    if (!isContactIdExist) {
-      throw new HttpException('Contact not found', 404);
-    }
+    await this.isContactExist(user.username, contactId);
 
     const validatedData: CreateAddressRequest = this.validationService.validate(
       AddressValidation.CREATE,
@@ -47,6 +54,38 @@ export class AddressService {
         ...validatedData,
       },
     });
+
+    return {
+      id: address.id,
+      street: address.street,
+      city: address.city,
+      province: address.province,
+      country: address.country,
+      postal_code: address.postal_code,
+    };
+  }
+
+  async getById(
+    user: User,
+    contactId: number,
+    id: number,
+  ): Promise<AddressResponse> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} AddressService.getById(contactId: ${contactId}, id: ${id}`,
+    );
+
+    await this.isContactExist(user.username, contactId);
+
+    const address = await this.prismaService.address.findUnique({
+      where: {
+        contact_id: contactId,
+        id: id,
+      },
+    });
+
+    if (!address) {
+      throw new HttpException('Address not found', 404);
+    }
 
     return {
       id: address.id,

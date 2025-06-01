@@ -1,5 +1,7 @@
 import {
+  Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -20,12 +22,30 @@ export class AddressController {
   async create(
     @Auth() user: User,
     @Param('contactId', ParseIntPipe) contactId: number,
-    request: CreateAddressRequest,
+    @Body() request: CreateAddressRequest,
   ): Promise<WebResponse<AddressResponse>> {
     const result: AddressResponse = await this.addressService.create(
       user,
       contactId,
       request,
+    );
+
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/:id')
+  @HttpCode(200)
+  async getById(
+    @Auth() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<WebResponse<AddressResponse>> {
+    const result: AddressResponse = await this.addressService.getById(
+      user,
+      contactId,
+      id,
     );
 
     return {

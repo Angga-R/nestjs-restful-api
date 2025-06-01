@@ -61,6 +61,22 @@ describe('AddressService', () => {
       expect(response.body.data.postal_code).toBe('2525612');
     });
 
+    it('should return error when contactId not found', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/api/contact/${859646405}/address/create`)
+        .set('Authorization', 'test')
+        .send({
+          street: 'test street',
+          city: 'test city',
+          province: 'test province',
+          country: 'test',
+          postal_code: '2525612',
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
     it('should be rejected if request is invalid', async () => {
       const contactId: number = await testService.createContact();
 
@@ -78,6 +94,60 @@ describe('AddressService', () => {
       logger.info(response.body);
 
       expect(response.status).toBe(400);
+    });
+  });
+
+  describe('GET /api/contact/:contactId/address/:id', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAll();
+    });
+
+    it('should be able to get address by Id', async () => {
+      const contactId: number = await testService.createContact();
+      const addressId: number = await testService.createAddress(contactId);
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/${contactId}/address/${addressId}`)
+        .set('Authorization', 'test');
+
+      logger.info('------------');
+      logger.info(response.body);
+      logger.info('------------');
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.street).toBe('test street');
+      expect(response.body.data.city).toBe('test city');
+      expect(response.body.data.province).toBe('test province');
+      expect(response.body.data.country).toBe('test');
+      expect(response.body.data.postal_code).toBe('2525612');
+    });
+
+    it('should return error when contactId not found', async () => {
+      const contactId: number = await testService.createContact();
+      const addressId: number = await testService.createAddress(contactId);
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/${4676546464}/address/${addressId}`)
+        .set('Authorization', 'test');
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should return error when addressId not found', async () => {
+      const contactId: number = await testService.createContact();
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/contact/${contactId}/address/${85493574395}`)
+        .set('Authorization', 'test');
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
     });
   });
 });

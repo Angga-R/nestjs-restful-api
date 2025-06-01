@@ -53,6 +53,21 @@ export class TestService {
     return contact.id;
   }
 
+  async createAddress(contactId: number): Promise<number> {
+    const address = await this.prismaService.address.create({
+      data: {
+        contact_id: contactId,
+        street: 'test street',
+        city: 'test city',
+        province: 'test province',
+        country: 'test',
+        postal_code: '2525612',
+      },
+    });
+
+    return address.id;
+  }
+
   async deleteContact(): Promise<void> {
     await this.prismaService.contact.deleteMany({
       where: {
