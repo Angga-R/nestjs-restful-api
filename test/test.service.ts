@@ -64,7 +64,7 @@ export class TestService {
   async deleteAddress(): Promise<void> {
     await this.prismaService.address.deleteMany({
       where: {
-        city: 'test',
+        country: 'test',
       },
     });
   }
