@@ -150,4 +150,54 @@ describe('AddressService', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('DELETE /api/contact/:contactId/address/:id/remove', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createToken();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAll();
+    });
+
+    it('should be able to remove address', async () => {
+      const contactId: number = await testService.createContact();
+      const addressId: number = await testService.createAddress(contactId);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contact/${contactId}/address/${addressId}/remove`)
+        .set('Authorization', 'test');
+
+      logger.info('------------');
+      logger.info(response.body);
+      logger.info('------------');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBeDefined();
+    });
+
+    it('should return error when contactId not found', async () => {
+      const contactId: number = await testService.createContact();
+      const addressId: number = await testService.createAddress(contactId);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contact/${4389543953}/address/${addressId}/remove`)
+        .set('Authorization', 'test');
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should return error when addressId not found', async () => {
+      const contactId: number = await testService.createContact();
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contact/${contactId}/address/${5839257353}/remove`)
+        .set('Authorization', 'test');
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

@@ -96,4 +96,28 @@ export class AddressService {
       postal_code: address.postal_code,
     };
   }
+
+  async remove(user: User, contactId: number, id: number): Promise<void> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} AddressService.getById(contactId: ${contactId}, id: ${id}`,
+    );
+
+    await this.isContactExist(user.username, contactId);
+
+    const isAddressExist = await this.prismaService.address.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!isAddressExist) {
+      throw new HttpException('Address not found', 404);
+    }
+
+    await this.prismaService.address.delete({
+      where: {
+        id: id,
+      },
+    });
+  }
 }
