@@ -15,4 +15,12 @@ interface CreateAddressRequest {
   postal_code: string;
 }
 
-export { AddressResponse, CreateAddressRequest };
+interface UpdateAddressRequest {
+  street?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  postal_code?: string;
+}
+
+export { AddressResponse, CreateAddressRequest, UpdateAddressRequest };

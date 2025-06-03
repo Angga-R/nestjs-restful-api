@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { AddressService } from './address.service';
@@ -64,5 +65,25 @@ export class AddressController {
     await this.addressService.remove(user, contactId, id);
 
     return 'OK';
+  }
+
+  @Patch('/:id/update')
+  @HttpCode(200)
+  async update(
+    @Auth() user: User,
+    @Param('contactId', ParseIntPipe) contactId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() request: CreateAddressRequest,
+  ): Promise<WebResponse<AddressResponse>> {
+    const result: AddressResponse = await this.addressService.update(
+      user,
+      contactId,
+      id,
+      request,
+    );
+
+    return {
+      data: result,
+    };
   }
 }

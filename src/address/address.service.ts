@@ -4,7 +4,11 @@ import { User } from 'generated/prisma';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { AddressResponse, CreateAddressRequest } from 'src/model/address.model';
+import {
+  AddressResponse,
+  CreateAddressRequest,
+  UpdateAddressRequest,
+} from 'src/model/address.model';
 import { Logger } from 'winston';
 import { AddressValidation } from './address.validation';
 
@@ -99,7 +103,7 @@ export class AddressService {
 
   async remove(user: User, contactId: number, id: number): Promise<void> {
     this.logger.debug(
-      `user: ${JSON.stringify(user)} AddressService.getById(contactId: ${contactId}, id: ${id}`,
+      `user: ${JSON.stringify(user)} AddressService.remove(contactId: ${contactId}, id: ${id}`,
     );
 
     await this.isContactExist(user.username, contactId);
@@ -119,5 +123,49 @@ export class AddressService {
         id: id,
       },
     });
+  }
+
+  async update(
+    user: User,
+    contactId: number,
+    id: number,
+    request: UpdateAddressRequest,
+  ): Promise<AddressResponse> {
+    this.logger.debug(
+      `user: ${JSON.stringify(user)} AddressService.update(contactId: ${contactId}, id: ${id}, request: ${JSON.stringify(request)}`,
+    );
+
+    await this.isContactExist(user.username, contactId);
+
+    const isAddressExist = await this.prismaService.address.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!isAddressExist) {
+      throw new HttpException('Address not found', 404);
+    }
+
+    const validatedData: UpdateAddressRequest = this.validationService.validate(
+      AddressValidation.UPDATE,
+      request,
+    );
+
+    const address = await this.prismaService.address.update({
+      where: {
+        id: id,
+      },
+      data: validatedData,
+    });
+
+    return {
+      id: address.id,
+      street: address.street,
+      city: address.city,
+      province: address.province,
+      country: address.country,
+      postal_code: address.postal_code,
+    };
   }
 }
